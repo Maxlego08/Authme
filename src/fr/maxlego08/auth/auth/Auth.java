@@ -15,6 +15,7 @@ public class Auth {
 	private boolean loginMail = false;
 	private List<AuthHistorical> historical = new ArrayList<AuthHistorical>();
 	private transient boolean isLogin = false;
+	private transient boolean isMailLogin = false;
 	private transient Location location;
 
 	/**
@@ -169,4 +170,20 @@ public class Auth {
 		this.location = location;
 	}
 
+	/**
+	 * @return the isMailLogin
+	 */
+	public boolean isMailLogin() {
+		return isMailLogin && isLoginMail();
+	}
+
+	/**
+	 * @param isMailLogin the isMailLogin to set
+	 */
+	public void setMailLogin(boolean isMailLogin) {
+		this.isMailLogin = isMailLogin;
+	}
+
+	
+	
 }

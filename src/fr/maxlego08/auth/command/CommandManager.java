@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.maxlego08.auth.Authme;
+import fr.maxlego08.auth.auth.AuthManager;
 import fr.maxlego08.auth.command.VCommand.CommandType;
 import fr.maxlego08.auth.command.commands.CommandAuthSetLocation;
 import fr.maxlego08.auth.command.commands.CommandMailSet;
@@ -34,6 +35,12 @@ public class CommandManager implements CommandExecutor {
 		addCommand(new CommandMailSet().addSubCommand("setmail").setParent(command).setNoConsole(true));
 		addCommand(new CommandMailVerif().addSubCommand("verifmail").setParent(command).setNoConsole(true));
 		addCommand(new CommandAuthSetLocation().addSubCommand("location").setParent(command).setNoConsole(true));
+		addCommand(new ZCommand().setCommand(cmd -> AuthManager.i.updateLogMail(cmd.getPlayer())).setDescription("Activer ou désactiver les notifications par mail")
+				.setSyntaxe("/authme notif").addSubCommand("notif")
+				.setParent(command));
+		addCommand(new ZCommand().setCommand(cmd -> AuthManager.i.updateLoginMail(cmd.getPlayer())).setDescription("Activer ou désactiver la connection par mail")
+				.setSyntaxe("/authme login").addSubCommand("login")
+				.setParent(command));
 		
 		main.getLog().log("Loading " + getUniqueCommand() + " commands", LogType.SUCCESS);
 

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
+import fr.maxlego08.auth.mail.MailManager;
 import fr.maxlego08.auth.packet.PacketAuthClient;
 import fr.maxlego08.auth.save.Config;
 import fr.maxlego08.auth.zcore.ZPlugin;
@@ -96,12 +97,19 @@ public class AuthManager extends ZUtils implements Saver {
 			auth.setLogin(true);
 			Logger.info(player.getName() + " just signed in!", LogType.INFO);
 			player.sendMessage(ZPlugin.z().getPrefix() + " §aConnexion effectué avec succès !");
-			player.teleport(auth.getLocation());
 			if (Config.useMail && !isMail(player.getName())) {
 				player.sendMessage(ZPlugin.z().getPrefix()
 						+ " §aVous n'avez pas vérifié votre mail ! Le serveur se dédouane de toutes responsabilités si une autre personne ce connecter sur votre compte ");
-				player.sendMessage(ZPlugin.z().getPrefix()+" §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
+				player.sendMessage(ZPlugin.z().getPrefix()
+						+ " §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
 			}
+			if (auth.isLogMail())
+				MailManager.i.sendLogEmail(auth, player);
+			if (auth.isLoginMail()) {
+				MailManager.i.sendLoginEmail(auth, player);
+				send(player, AuthAction.SEND_LOGIN_CONFIRM);
+			} else
+				player.teleport(auth.getLocation());
 		} else
 			send(player, AuthAction.LOGIN_ERROR, "§cMot de passe incorrect !");
 	}
@@ -134,7 +142,29 @@ public class AuthManager extends ZUtils implements Saver {
 		if (Config.useMail && !isMail(player.getName())) {
 			player.sendMessage(ZPlugin.z().getPrefix()
 					+ " §aVous n'avez pas vérifié votre mail ! Le serveur se dédouane de toutes responsabilités si une autre personne ce connecter sur votre compte ");
-			player.sendMessage(ZPlugin.z().getPrefix()+" §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
+			player.sendMessage(ZPlugin.z().getPrefix()
+					+ " §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
+		}
+	}
+
+	/**
+	 * Confirm player login
+	 * 
+	 * @param player
+	 * @param code
+	 */
+	public void confirmLogin(Player player, String code) {
+		Auth auth = getUser(player.getName());
+		if (MailManager.i.verifCodeConfirm(player.getName(), code)) {
+
+			auth.setMailLogin(false);
+			Logger.info(player.getName() + " just confirm !", LogType.INFO);
+			player.sendMessage(ZPlugin.z().getPrefix() + " §aConfirmation effectué avec succès !");
+			player.teleport(auth.getLocation());
+			send(player, AuthAction.CONFIRM_SUCCESS);
+
+		} else {
+			send(player, AuthAction.CONFIRM_ERROR, "Code incorrect !");
 		}
 	}
 
@@ -176,19 +206,45 @@ public class AuthManager extends ZUtils implements Saver {
 	private boolean isLogin(Player player) {
 		if (!exist(player.getName()))
 			return true;
-		return getUser(player.getName()).isLogin();
+		return getUser(player.getName()).isLogin() || getUser(player.getName()).isMailLogin();
 	}
 
+	/**
+	 * @param player
+	 * @return true if player can interact
+	 */
 	public boolean canInteract(Player player) {
-		if (!isLogin(player)) {
+		if (!isLogin(player) || getUser(player.getName()).isMailLogin()) {
 			getUser(player.getName()).setLocation(player.getLocation());
 			if (exist(player.getName()))
 				send(player, AuthAction.SEND_LOGIN);
+			else if (getUser(player.getName()).isMailLogin())
+				send(player, AuthAction.SEND_LOGIN_CONFIRM);
 			else
 				send(player, AuthAction.SEND_REGISTER);
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * @param player
+	 */
+	public void updateLogMail(Player player) {
+		Auth auth = getUser(player.getName());
+		auth.setLogMail(!auth.isLogMail());
+		player.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez §2"
+				+ (auth.isLogMail() ? "d'activer" : "de désactiver") + " §ales notifications de connection par mail");
+	}
+
+	/**
+	 * @param player
+	 */
+	public void updateLoginMail(Player player) {
+		Auth auth = getUser(player.getName());
+		auth.setLoginMail(!auth.isLoginMail());
+		player.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez §2"
+				+ (auth.isLoginMail() ? "d'activer" : "de désactiver") + " §ala connection par mail");
 	}
 
 	public static transient AuthManager i = new AuthManager();

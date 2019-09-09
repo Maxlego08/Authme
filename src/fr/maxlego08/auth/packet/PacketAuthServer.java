@@ -37,6 +37,9 @@ public class PacketAuthServer extends Packet {
 		case RECEIVE_REGISTER_PASSWORD:
 			AuthManager.i.register(player, password);
 			break;
+		case RECEIVE_LOGIN_CONFIRM:
+			AuthManager.i.confirmLogin(player, password);
+			break;
 		default:
 			break;
 		}

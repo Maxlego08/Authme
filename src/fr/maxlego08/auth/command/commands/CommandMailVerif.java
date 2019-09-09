@@ -33,7 +33,7 @@ public class CommandMailVerif extends VCommand {
 			return CommandType.DEFAULT;
 		}
 
-		MailManager.i.verifCore(getPlayer(), code);
+		MailManager.i.verifCode(getPlayer(), code);
 		
 		return CommandType.SUCCESS;
 	}

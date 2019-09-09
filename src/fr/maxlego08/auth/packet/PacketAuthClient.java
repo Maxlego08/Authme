@@ -38,7 +38,7 @@ public class PacketAuthClient extends Packet {
 	@Override
 	public void b(PacketDataSerializer write) throws IOException {
 		write.writeInt(action.getId());
-		if (action.equals(AuthAction.LOGIN_ERROR))
+		if (action.equals(AuthAction.LOGIN_ERROR) || action.equals(AuthAction.CONFIRM_ERROR))
 			write.a(message);
 	}
 
