@@ -3,6 +3,7 @@ package fr.oldfight.auth.packet;
 import java.io.IOException;
 
 import fr.oldfight.auth.AuthAction;
+import fr.oldfight.auth.AuthGui;
 import fr.oldfight.auth.gui.GuiAuth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.INetHandler;
@@ -17,7 +18,7 @@ public class PacketClientAuth extends Packet{
 	@Override
 	public void readPacketData(PacketBuffer reader) throws IOException {
 		action = AuthAction.get(reader.readInt());
-		if (action.equals(AuthAction.LOGIN_ERROR))
+		if (action.equals(AuthAction.LOGIN_ERROR) || action.equals(AuthAction.CONFIRM_ERROR))
 			message = reader.readStringFromBuffer(32767);
 	}
 
@@ -30,6 +31,7 @@ public class PacketClientAuth extends Packet{
 	public void processPacket(INetHandler reader) {
 		switch (action) {
 		case LOGIN_ERROR:
+		case CONFIRM_ERROR:
 			GuiAuth.sendMessage(message);
 			break;
 		case RECEIVE_LOGIN_PASSWORD:
@@ -40,13 +42,17 @@ public class PacketClientAuth extends Packet{
 			break;
 		case LOGIN_SUCCESS:
 		case REGISTER_SUCCESS:
+		case CONFIRM_SUCCESS:
 			Minecraft.getMinecraft().displayGuiScreen(null);
 			break;
 		case SEND_LOGIN:
-			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(false));
+			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.LOGIN));
 			break;
 		case SEND_REGISTER:
-			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(true));
+			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.REGISTER));
+			break;
+		case SEND_LOGIN_CONFIRM:
+			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.CONFIRM));
 			break;
 		default:
 			break;

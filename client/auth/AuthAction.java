@@ -10,7 +10,11 @@ public enum AuthAction {
 	REGISTER_ERROR(5),
 	LOGIN_SUCCESS(6),
 	LOGIN_ERROR(7),
-
+	SEND_LOGIN_CONFIRM(8),
+	RECEIVE_LOGIN_CONFIRM(9),
+	CONFIRM_SUCCESS(10),
+	CONFIRM_ERROR(11),
+	
 	;
 
 	private final int id;

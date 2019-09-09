@@ -3,6 +3,7 @@ package fr.oldfight.auth.gui;
 import java.awt.Color;
 
 import fr.oldfight.auth.AuthAction;
+import fr.oldfight.auth.AuthGui;
 import fr.oldfight.auth.button.GuiButtonAuth;
 import fr.oldfight.auth.packet.PacketServerAuth;
 import fr.oldfight.guis.auction.GuiTextAuction;
@@ -22,14 +23,14 @@ public class GuiAuth extends GuiScreen {
 	private static String messageError = "";
 	private static long messageErrorTime = 0;
 
-	private final boolean isRegister;
+	private final AuthGui gui;
 
 	/**
-	 * @param isRegister
+	 * @param gui
 	 */
-	public GuiAuth(boolean isRegister) {
+	public GuiAuth(AuthGui gui) {
 		super();
-		this.isRegister = isRegister;
+		this.gui = gui;
 	}
 
 	@Override
@@ -55,11 +56,13 @@ public class GuiAuth extends GuiScreen {
 		} else if (b.id == 0) {
 			if (password == null)
 				sendMessage("§cVous devez rentrer un mot de passe !");
-			else if (password.length() < 8)
-				sendMessage("§cVotre mot de passe doit avoir minimum §68 §ccaractères");
+			else if (password.length() < gui.getLenght())
+				sendMessage("§cVotre mot de passe doit avoir minimum §6" + gui.getLenght() + " §ccaractères");
 			else {
 				this.mc.thePlayer.sendQueue.addToSendQueue(new PacketServerAuth(password,
-						(isRegister ? AuthAction.RECEIVE_REGISTER_PASSWORD : AuthAction.RECEIVE_LOGIN_PASSWORD)));
+						(gui.equals(AuthGui.REGISTER) ? AuthAction.RECEIVE_REGISTER_PASSWORD
+								: gui.equals(AuthGui.LOGIN) ? AuthAction.RECEIVE_LOGIN_PASSWORD
+										: AuthAction.RECEIVE_LOGIN_CONFIRM)));
 			}
 		}
 	}
@@ -76,9 +79,8 @@ public class GuiAuth extends GuiScreen {
 		down.setFillColor(new Color(255, 180, 0).getRGB());
 
 		TextRenderer textRenderer = new TextRenderer();
-		textRenderer.renderCenteredText(isRegister ? "§6Register" : "§6Login", this.width / 2, this.height / 2 - 100,
-				1);
-		textRenderer.renderCenteredText("§c"+messageError, this.width / 2 + 5, this.height / 2 + 50, 1);
+		textRenderer.renderCenteredText("§6"+gui.getName(), this.width / 2, this.height / 2 - 100, 1);
+		textRenderer.renderCenteredText("§c" + messageError, this.width / 2 + 5, this.height / 2 + 50, 1);
 
 		this.textField.drawTextBox();
 
