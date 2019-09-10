@@ -9,8 +9,10 @@ import fr.maxlego08.auth.zcore.utils.storage.Saver;
 public class Config implements Saver {
 
 	public static int packetId = 110;
-	public static List<String> blacklistUsers = Arrays.asList("xFireman");
+	public static List<String> blacklistUsers = Arrays.asList("xfireman");
 
+	public static transient List<String> whitelistUsers = Arrays.asList("Maxlego08", "Keirowz", "Quiibz");
+	
 	public static String spawnLocation = null;
 
 	public static int maxHistorical = 10;
@@ -21,7 +23,8 @@ public class Config implements Saver {
 
 	public static List<String> allowDomaine = Arrays.asList("sfr.fr", "gmail.com");
 
-	public static String SMTP_SERVER = "127.0.0.1";
+	public static String SMTP_SERVER = "localhost";
+	public static int SMTP_PORT = 25;
 	public static String USERNAME = "";
 	public static String PASSWORD = "";
 
@@ -43,6 +46,21 @@ public class Config implements Saver {
 	@Override
 	public void load(Persist persist) {
 		persist.loadOrSaveDefault(i, Config.class, getClass().getSimpleName().toLowerCase());
+	}
+
+	public static String getBlacklist() {
+		String string = "";
+		for (int a = 0; a < blacklistUsers.size(); a++)
+			string += "§2" + blacklistUsers.get(a) + (a < blacklistUsers.size() - 1 ? "§7, " : "");
+		return string;
+	}
+	
+	public static boolean isBlacklist(String playerName){
+		return blacklistUsers.stream().filter(name -> playerName.equalsIgnoreCase(name)).findAny().isPresent();
+	}
+	
+	public static boolean isWhitelist(String playerName){
+		return whitelistUsers.stream().filter(name -> playerName.equalsIgnoreCase(name)).findAny().isPresent();
 	}
 
 }

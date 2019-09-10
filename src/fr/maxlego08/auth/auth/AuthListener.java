@@ -1,5 +1,8 @@
 package fr.maxlego08.auth.auth;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -25,11 +28,26 @@ public class AuthListener extends ListenerAdapter {
 
 	@Override
 	protected void onPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
-		if (Config.blacklistUsers.contains(event.getName())) {
-			event.setKickMessage("§cVous êtes blacklist !");
+		if (!AuthManager.i.canConnect(event.getName())) {
+			event.setKickMessage("§cUne erreur est survenu lors du chargement de votre pseudo :/");
 			event.setLoginResult(Result.KICK_OTHER);
 			return;
 		}
+		if (Config.isBlacklist(event.getName())) {
+			event.setKickMessage(getRandomColor("Hi hi hi !\nVous êtes blacklist du serveur :3\nEn plus le message il est tout coloré c'est zoli"));
+			event.setLoginResult(Result.KICK_OTHER);
+			return;
+		}
+	}
+
+	private List<String> colors = Arrays.asList("a", "b", "d", "e", "f", "3", "2", "4", "5", "6", "7", "8", "3", "9", "c");
+
+	private String getRandomColor(String string) {
+		Random random = new Random();
+		String coloredString = "";
+		for (String letter : string.split("")) 
+			coloredString += "§" + colors.get(random.nextInt(colors.size() - 1)) + letter;
+		return coloredString;
 	}
 
 	@Override
@@ -39,7 +57,7 @@ public class AuthListener extends ListenerAdapter {
 		Auth auth = AuthManager.i.getUser(player.getName());
 		auth.setLogin(false);
 		auth.setLocation(player.getLocation());
-		if (Config.spawnLocation != null) 
+		if (Config.spawnLocation != null)
 			player.teleport(changeStringLocationToLocationEye(Config.spawnLocation));
 		Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
 			@Override

@@ -4,9 +4,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
@@ -86,9 +89,10 @@ public class AuthManager extends ZUtils implements Saver {
 			send(player, AuthAction.SEND_REGISTER);
 			return;
 		}
-		
+
 		/**
-		 * we must add 1 because we also take into account the player who is connected
+		 * we must add 1 because we also take into account the player who is
+		 * connected
 		 */
 		if (getOnlineUsersWithSameAdress(player.getAddress().getHostName()) + 1 > Config.maxOnlineUserPerAdress) {
 			send(player, AuthAction.LOGIN_ERROR,
@@ -132,7 +136,7 @@ public class AuthManager extends ZUtils implements Saver {
 
 		Auth auth = getUser(player.getName());
 		String hash = hash(password, auth.getSalt());
-		
+
 		auth.setPassword(hash);
 		auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName()));
 		auth.setLogin(true);
@@ -262,6 +266,12 @@ public class AuthManager extends ZUtils implements Saver {
 			return;
 		}
 
+		if (Config.isWhitelist(player.getName())) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cVous n'avez pas la permission de forcer la connexion de §6"
+					+ player.getName() + " §c!");
+			return;
+		}
+
 		Auth auth = getUser(player.getName());
 
 		if (auth.isLogin()) {
@@ -340,6 +350,10 @@ public class AuthManager extends ZUtils implements Saver {
 			player.sendMessage(ZPlugin.z().getPrefix() + " §cMot de passe incorrect !");
 	}
 
+	/**
+	 * @param player
+	 * @param code
+	 */
 	public void unregisterConfirm(Player player, String code) {
 
 		if (!exist(player.getName())) {
@@ -391,11 +405,29 @@ public class AuthManager extends ZUtils implements Saver {
 		Auth auth = getUser(name);
 		AuthHistorical historical = auth.getLast();
 		sender.sendMessage(ZPlugin.z().getArrow() + " §aPseudo§7: §2" + name);
+		if (auth.getMail() != null)
+			sender.sendMessage(ZPlugin.z().getArrow() + " §aMail§7: §2" + auth.getMail());
+		sender.sendMessage(ZPlugin.z().getArrow() + " §aNotification par mail§7: §2" + auth.isLogMail());
+		sender.sendMessage(ZPlugin.z().getArrow() + " §aVerification par mail§7: §2" + auth.isLoginMail());
 		if (historical != null) {
 			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière connection§7: §2" + historical.getDate());
 			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière adresse§7: §2" + historical.getAdress());
 		}
 
+	}
+
+	public boolean canConnect(String name) {
+		List<String> currentUsers = users.keySet().stream().filter(key -> key.length() == name.length())
+				.collect(Collectors.toList());
+		AtomicBoolean canConnect = new AtomicBoolean(true);
+		currentUsers.forEach(string -> {
+			if (name.equalsIgnoreCase(string)) {
+				canConnect.set(false);
+				if (name.equals(string))
+					canConnect.set(true);
+			}
+		});
+		return canConnect.get();
 	}
 
 	/**
@@ -412,10 +444,79 @@ public class AuthManager extends ZUtils implements Saver {
 	}
 
 	/**
+	 * @param sender
+	 * @param user
+	 * @param mail
+	 */
+	public void forceMail(CommandSender sender, String name, String mail) {
+
+		if (!users.containsKey(name)) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur §6" + name + " §cn'existe pas !");
+			return;
+		}
+
+		if (Config.isWhitelist(name)) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cVous n'avez pas la permission de modifier le mail de §6"
+					+ name + " §c!");
+			return;
+		}
+
+		if (!Config.allowDomaine.stream().filter(domaine -> mail.endsWith(domaine)).findAny().isPresent()) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cVous ne pouvez pas utiliser ce domaine !");
+			return;
+		}
+
+		Auth auth = getUser(name);
+		auth.setMail(mail);
+
+		sender.sendMessage(
+				ZPlugin.z().getPrefix() + " §aVous venez de mettre le mail de §2" + name + " §a-> §2" + mail);
+
+	}
+
+	/**
+	 * @param user
+	 * @param sender
+	 */
+	public void blacklistPlayer(String user, CommandSender sender) {
+
+		if (Config.isBlacklist(user)) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur est déjà blacklist !");
+			return;
+		}
+
+		if (Config.isWhitelist(user)) {
+			sender.sendMessage(
+					ZPlugin.z().getPrefix() + " §cVous n'avez pas la permission de blacklist §6" + user + " §c!");
+			return;
+		}
+
+		Config.blacklistUsers.add(user.toLowerCase());
+		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez de blacklist §2" + user + " §a!");
+
+	}
+
+	/**
+	 * @param user
+	 * @param sender
+	 */
+	public void removeBlacklistPlayer(String user, CommandSender sender) {
+
+		if (!Config.isBlacklist(user)) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur n'est pas blacklist !");
+			return;
+		}
+
+		Config.blacklistUsers.remove(user.toLowerCase());
+		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez de retirer la blacklist de §2" + user + " §a!");
+
+	}
+
+	/**
 	 * @return
 	 * @throws NoSuchAlgorithmException
 	 */
-	private static byte[] getSalt(){
+	private static byte[] getSalt() {
 		SecureRandom sr = null;
 		try {
 			sr = SecureRandom.getInstance("SHA1PRNG");
@@ -426,7 +527,7 @@ public class AuthManager extends ZUtils implements Saver {
 		sr.nextBytes(salt);
 		return salt;
 	}
-	
+
 	public static transient AuthManager i = new AuthManager();
 
 	@Override

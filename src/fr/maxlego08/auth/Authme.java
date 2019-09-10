@@ -31,12 +31,12 @@ public class Authme extends ZPlugin {
 		preEnable();
 
 		commandManager = new CommandManager(this);
-		inventoryManager = new InventoryManager(this);
+//		inventoryManager = new InventoryManager(this);
 
 		/* Add Listener */
 
 		addListener(new AdapterListener(this));
-		addListener(inventoryManager);
+//		addListener(inventoryManager);
 		addListener(new AuthListener());
 
 		/* Add Saver */

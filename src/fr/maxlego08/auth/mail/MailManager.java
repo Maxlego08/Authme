@@ -52,14 +52,15 @@ public class MailManager implements Saver {
 	public void sendVerificationEmail(Player player, String mail) {
 		String key = generateRandomKey();
 		Timer timer = new Timer();
-		verifEmail.put(player.getName(), new Mail(mail, key));
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				if (sendMail(Config.EMAIL_SUBJECT, Config.EMAIL_CONTENT.replace("%code%", key), mail))
+				System.out.println("ici ?");
+				if (sendMail(Config.EMAIL_SUBJECT, Config.EMAIL_CONTENT.replace("%code%", key), mail)) {
+					verifEmail.put(player.getName(), new Mail(mail, key));
 					player.sendMessage(
 							ZPlugin.z().getPrefix() + " §aMail envoyé avec succès à §2" + getBlur(mail) + "§a !");
-				else
+				} else
 					player.sendMessage(ZPlugin.z().getPrefix()
 							+ " §cUne erreur est survenue lors de l'envoie du mail à §6" + getBlur(mail) + "§c !");
 			}
@@ -93,24 +94,24 @@ public class MailManager implements Saver {
 			return;
 		Timer timer = new Timer();
 		String key = generateRandomKey();
-		verifEmailLogin.put(player.getName(), new MailLogin(key, auth));
-		auth.setMailLogin(true);
 		player.sendMessage(ZPlugin.z().getPrefix() + " §aEnvoie du mail...");
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				String htmlContent = Config.EMAIL_CONTENT_LOGIN.replace("%code%", key);
-				if (sendMail("Oldfight - Connection", htmlContent, auth.getMail()))
+				if (sendMail("Oldfight - Connection", htmlContent, auth.getMail())) {
+					auth.setMailLogin(true);
+					verifEmailLogin.put(player.getName(), new MailLogin(key, auth));
 					player.sendMessage(ZPlugin.z().getPrefix() + " §aMail envoyé avec succès à §2"
 							+ getBlur(auth.getMail()) + "§a !");
-				else
+				} else
 					player.sendMessage(
 							ZPlugin.z().getPrefix() + " §cUne erreur est survenue lors de l'envoie du mail à §6"
 									+ getBlur(auth.getMail()) + "§c !");
 			}
 		}, 100);
 	}
-	
+
 	/**
 	 * @param auth
 	 * @param player
@@ -120,16 +121,16 @@ public class MailManager implements Saver {
 			return;
 		Timer timer = new Timer();
 		String key = generateRandomKey();
-		verifEmailUnregister.put(player.getName(), key);
 		player.sendMessage(ZPlugin.z().getPrefix() + " §aEnvoie du mail...");
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				String htmlContent = Config.EMAIL_CONTENT_UNREGISTER.replace("%code%", key);
-				if (sendMail("Oldfight - Suppression de votre compte", htmlContent, auth.getMail()))
+				if (sendMail("Oldfight - Suppression de votre compte", htmlContent, auth.getMail())){
+					verifEmailUnregister.put(player.getName(), key);
 					player.sendMessage(ZPlugin.z().getPrefix() + " §aMail envoyé avec succès à §2"
 							+ getBlur(auth.getMail()) + "§a !");
-				else
+				}else
 					player.sendMessage(
 							ZPlugin.z().getPrefix() + " §cUne erreur est survenue lors de l'envoie du mail à §6"
 									+ getBlur(auth.getMail()) + "§c !");
@@ -141,12 +142,12 @@ public class MailManager implements Saver {
 		if (!verifEmailUnregister.containsKey(name))
 			return true;
 		boolean isCorrect = verifEmailUnregister.get(name).equals(code);
-		if (isCorrect) 
+		if (isCorrect)
 			verifEmailUnregister.remove(name);
 		return isCorrect;
 
 	}
-	
+
 	/**
 	 * @param mail
 	 * @return current string in blur
@@ -203,7 +204,7 @@ public class MailManager implements Saver {
 		if (!verifEmailLogin.containsKey(name))
 			return true;
 		boolean isCorrect = verifEmailLogin.get(name).getKey().equals(code);
-		if (isCorrect) 
+		if (isCorrect)
 			verifEmailLogin.remove(name);
 		return isCorrect;
 
@@ -219,7 +220,7 @@ public class MailManager implements Saver {
 		Properties prop = System.getProperties();
 		prop.put("mail.smtp.host", Config.SMTP_SERVER);
 		prop.put("mail.smtp.auth", "true");
-		prop.put("mail.smtp.port", "25");
+		prop.put("mail.smtp.port", Config.SMTP_PORT);
 
 		Session session = Session.getInstance(prop, null);
 		Message msg = new MimeMessage(session);
@@ -235,6 +236,7 @@ public class MailManager implements Saver {
 			// System.out.println("Response: " + t.getLastServerResponse());
 			t.close();
 		} catch (MessagingException e) {
+			System.out.println(e.getMessage() + " -- ");
 			return false;
 		}
 		return true;

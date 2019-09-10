@@ -12,12 +12,16 @@ import fr.maxlego08.auth.Authme;
 import fr.maxlego08.auth.auth.AuthManager;
 import fr.maxlego08.auth.command.VCommand.CommandType;
 import fr.maxlego08.auth.command.commands.CommandAuthForceLogin;
+import fr.maxlego08.auth.command.commands.CommandAuthForceMail;
 import fr.maxlego08.auth.command.commands.CommandAuthForceRegister;
 import fr.maxlego08.auth.command.commands.CommandAuthSetLocation;
 import fr.maxlego08.auth.command.commands.CommandAuthShow;
 import fr.maxlego08.auth.command.commands.CommandAuthUnregister;
+import fr.maxlego08.auth.command.commands.CommandBlacklistAdd;
+import fr.maxlego08.auth.command.commands.CommandBlacklistRemove;
 import fr.maxlego08.auth.command.commands.CommandMailSet;
 import fr.maxlego08.auth.command.commands.CommandMailVerif;
+import fr.maxlego08.auth.save.Config;
 import fr.maxlego08.auth.zcore.ZPlugin;
 import fr.maxlego08.auth.zcore.logger.Logger.LogType;
 import fr.maxlego08.auth.zcore.utils.TextUtil;
@@ -37,7 +41,7 @@ public class CommandManager implements CommandExecutor {
 				.addSubCommand("reload").setParent(command));
 		addCommand(new CommandMailSet().addSubCommand("setmail").setParent(command).setNoConsole(true));
 		addCommand(new CommandMailVerif().addSubCommand("verifmail").setParent(command).setNoConsole(true));
-		addCommand(new CommandAuthSetLocation().addSubCommand("location").setParent(command).setNoConsole(true));
+		addCommand(new CommandAuthSetLocation().addSubCommand("setlocation").setParent(command).setNoConsole(true));
 		addCommand(new ZCommand().setCommand(cmd -> AuthManager.i.updateLogMail(cmd.getPlayer()))
 				.setDescription("Activer ou désactiver les notifications par mail").setSyntaxe("/authme notif")
 				.addSubCommand("notif").setParent(command).setNoConsole(true));
@@ -46,6 +50,7 @@ public class CommandManager implements CommandExecutor {
 				.addSubCommand("login").setParent(command).setNoConsole(true));
 		addCommand(new CommandAuthForceLogin().addSubCommand("forcelogin").setParent(command));
 		addCommand(new CommandAuthForceRegister().addSubCommand("register").setParent(command));
+		addCommand(new CommandAuthForceMail().addSubCommand("forcemail").setParent(command));
 		addCommand(new CommandAuthUnregister().addSubCommand("unregister").setParent(command).setNoConsole(true));
 		addCommand(new ZCommand().setCommand(cmd -> {
 			cmd.sendMessage(main.getPrefix() + " §aUtilisateur§7: §2" + AuthManager.getUsers().size());
@@ -60,6 +65,12 @@ public class CommandManager implements CommandExecutor {
 		}).setDescription("Voir la version du plugin").setSyntaxe("/authme version").addSubCommand("version", "v", "ver")
 				.setParent(command));
 		addCommand(new CommandAuthShow().addSubCommand("show").setParent(command));
+		addCommand(new ZCommand().setCommand(cmd -> {
+			cmd.sendMessage(main.getPrefix() + " §aJoueur blacklist§7: §a" + Config.getBlacklist());
+		}).setDescription("Voir les joueurs blacklist").setSyntaxe("/authme blacklistshow").addSubCommand("blacklistshow", "bls")
+				.setParent(command));
+		addCommand(new CommandBlacklistAdd().addSubCommand("bladd", "blacklistadd").setParent(command));
+		addCommand(new CommandBlacklistRemove().addSubCommand("blremove", "blacklistremove").setParent(command));
 
 		main.getLog().log("Loading " + getUniqueCommand() + " commands", LogType.SUCCESS);
 
