@@ -287,6 +287,10 @@ public class AuthManager extends ZUtils implements Saver {
 			player.teleport(auth.getLocation());
 	}
 
+	public static Map<String, Auth> getUsers() {
+		return users;
+	}
+	
 	/**
 	 * @param player
 	 */

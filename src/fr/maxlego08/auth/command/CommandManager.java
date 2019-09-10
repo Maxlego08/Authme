@@ -45,6 +45,12 @@ public class CommandManager implements CommandExecutor {
 				.addSubCommand("login").setParent(command).setNoConsole(true));
 		addCommand(new CommandAuthForceLogin().addSubCommand("forcelogin").setParent(command));
 		addCommand(new CommandAuthForceRegister().addSubCommand("register").setParent(command));
+		addCommand(new ZCommand().setCommand(cmd -> {
+			cmd.sendMessage(main.getPrefix() + " §aUtilisateur§7: §2" + AuthManager.getUsers().size());
+			cmd.sendMessage(main.getPrefix() + " §aUtilisateur avec le mail confirmé§7: §2"
+					+ AuthManager.getUsers().values().stream().filter(auth -> auth.getMail() != null).count());
+		}).setDescription("Voir le nombre d'utilisateur").setSyntaxe("/authme stats").addSubCommand("stats")
+				.setParent(command));
 
 		main.getLog().log("Loading " + getUniqueCommand() + " commands", LogType.SUCCESS);
 
