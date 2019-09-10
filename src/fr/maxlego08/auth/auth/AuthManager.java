@@ -211,6 +211,10 @@ public class AuthManager extends ZUtils implements Saver {
 	 */
 	public void updateLogMail(Player player) {
 		Auth auth = getUser(player.getName());
+		if (auth.getMail() == null){
+			player.sendMessage(ZPlugin.z().getPrefix() + " §cVous n'avez pas enregistrer votre mail !");
+			return;
+		}
 		auth.setLogMail(!auth.isLogMail());
 		player.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez §2"
 				+ (auth.isLogMail() ? "d'activer" : "de désactiver") + " §ales notifications de connection par mail");
@@ -221,6 +225,10 @@ public class AuthManager extends ZUtils implements Saver {
 	 */
 	public void updateLoginMail(Player player) {
 		Auth auth = getUser(player.getName());
+		if (auth.getMail() == null){
+			player.sendMessage(ZPlugin.z().getPrefix() + " §cVous n'avez pas enregistrer votre mail !");
+			return;
+		}
 		auth.setLoginMail(!auth.isLoginMail());
 		player.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez §2"
 				+ (auth.isLoginMail() ? "d'activer" : "de désactiver") + " §ala connection par mail");
@@ -281,7 +289,7 @@ public class AuthManager extends ZUtils implements Saver {
 		sendMailInformation(player);
 		if (auth.isLogMail())
 			MailManager.i.sendLogEmail(auth, player);
-		if (auth.isLoginMail()) {
+		if (auth.isLoginMail() && !auth.sameAdress(player.getAddress().getHostName())) {
 			MailManager.i.sendLoginEmail(auth, player);
 			send(player, AuthAction.SEND_LOGIN_CONFIRM);
 		} else
@@ -353,6 +361,21 @@ public class AuthManager extends ZUtils implements Saver {
 		}
 	}
 
+	public void showInformation(String name, CommandSender sender){
+		
+		if (!users.containsKey(name)){
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur §6" + name + " §cn'existe pas !");
+			return;
+		}
+		
+		Auth auth = getUser(name);
+		AuthHistorical historical = auth.getLast();
+		sender.sendMessage(ZPlugin.z().getArrow() + " §aPseudo§7: §2" + name);
+		sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière connection§7: §2" + historical.getDate());
+		sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière adresse§7: §2" + historical.getAdress());
+		
+	}
+	
 	public static transient AuthManager i = new AuthManager();
 
 	@Override

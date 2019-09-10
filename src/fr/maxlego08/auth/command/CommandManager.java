@@ -14,6 +14,7 @@ import fr.maxlego08.auth.command.VCommand.CommandType;
 import fr.maxlego08.auth.command.commands.CommandAuthForceLogin;
 import fr.maxlego08.auth.command.commands.CommandAuthForceRegister;
 import fr.maxlego08.auth.command.commands.CommandAuthSetLocation;
+import fr.maxlego08.auth.command.commands.CommandAuthShow;
 import fr.maxlego08.auth.command.commands.CommandAuthUnregister;
 import fr.maxlego08.auth.command.commands.CommandMailSet;
 import fr.maxlego08.auth.command.commands.CommandMailVerif;
@@ -34,7 +35,6 @@ public class CommandManager implements CommandExecutor {
 		addCommand(new ZCommand().setCommand(cmd -> ZPlugin.z().reload(cmd.getSender()))
 				.setDescription("Reload la config").setSyntaxe("/authme reload").setPermission("admin.auth.reload")
 				.addSubCommand("reload").setParent(command));
-
 		addCommand(new CommandMailSet().addSubCommand("setmail").setParent(command).setNoConsole(true));
 		addCommand(new CommandMailVerif().addSubCommand("verifmail").setParent(command).setNoConsole(true));
 		addCommand(new CommandAuthSetLocation().addSubCommand("location").setParent(command).setNoConsole(true));
@@ -53,6 +53,13 @@ public class CommandManager implements CommandExecutor {
 					+ AuthManager.getUsers().values().stream().filter(auth -> auth.getMail() != null).count());
 		}).setDescription("Voir le nombre d'utilisateur").setSyntaxe("/authme stats").addSubCommand("stats")
 				.setParent(command));
+		addCommand(new ZCommand().setCommand(cmd -> {
+			cmd.sendMessage(main.getPrefix() + " §a" + main.getDescription().getFullName());
+			cmd.sendMessage(main.getPrefix() + " §aPlugin développé par §lMaxlego08 §a!");
+			cmd.sendMessage(main.getPrefix() + " §aGitHub§7: §2https://github.com/Maxlego08/Authme");
+		}).setDescription("Voir la version du plugin").setSyntaxe("/authme version").addSubCommand("version", "v", "ver")
+				.setParent(command));
+		addCommand(new CommandAuthShow().addSubCommand("show").setParent(command));
 
 		main.getLog().log("Loading " + getUniqueCommand() + " commands", LogType.SUCCESS);
 
@@ -127,7 +134,7 @@ public class CommandManager implements CommandExecutor {
 			if (command.getParent() != null && command.getParent().getSubCommands().contains(commandString)
 					&& command.getDescription() != null) {
 				if ((!(sender instanceof Player) && !command.isNoConsole()) || sender instanceof Player)
-					sender.sendMessage("§a» §6" + command.getSyntax() + " §7- §e" + command.getDescription());
+					sender.sendMessage("§6» §2" + command.getSyntax() + " §7- §a" + command.getDescription());
 			}
 		});
 	}

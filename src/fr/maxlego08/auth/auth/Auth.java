@@ -2,8 +2,11 @@ package fr.maxlego08.auth.auth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bukkit.Location;
+
+import fr.maxlego08.auth.save.Config;
 
 public class Auth {
 
@@ -100,6 +103,7 @@ public class Auth {
 	 */
 	public void add(AuthHistorical authHistorical) {
 		this.historical.add(authHistorical);
+		updateHistorical();
 	}
 
 	/**
@@ -178,12 +182,27 @@ public class Auth {
 	}
 
 	/**
-	 * @param isMailLogin the isMailLogin to set
+	 * @param isMailLogin
+	 *            the isMailLogin to set
 	 */
 	public void setMailLogin(boolean isMailLogin) {
 		this.isMailLogin = isMailLogin;
 	}
 
-	
-	
+	private void updateHistorical() {
+		if (historical.size() > Config.maxHistorical)
+			historical = historical.stream().skip(historical.size() - Config.maxHistorical)
+					.collect(Collectors.toList());
+	}
+
+	public boolean sameAdress(String adress) {
+		if (historical.size() == 0)
+			return false;
+		return historical.get(historical.size() - 1).getAdress().equals(adress);
+	}
+
+	public AuthHistorical getLast() {
+		return historical.get(historical.size() - 1);
+	}
+
 }
