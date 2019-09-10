@@ -6,7 +6,7 @@ import fr.oldfight.auth.AuthAction;
 import fr.oldfight.auth.AuthGui;
 import fr.oldfight.auth.button.GuiButtonAuth;
 import fr.oldfight.auth.packet.PacketServerAuth;
-import fr.oldfight.guis.auction.GuiTextAuction;
+import fr.oldfight.auth.text.GuiTextAuth;
 import fr.oldfight.guis.modified.GuiMainMenu;
 import fr.oldfight.utils.ColorType;
 import fr.oldfight.utils.Module;
@@ -17,7 +17,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 
 public class GuiAuth extends GuiScreen {
 
-	private GuiTextAuction textField;
+	private GuiTextAuth textField;
 	private String password;
 
 	private static String messageError = "";
@@ -38,7 +38,7 @@ public class GuiAuth extends GuiScreen {
 
 		this.buttonList.clear();
 
-		this.textField = new GuiTextAuction(this.mc.fontRenderer, this.width / 2 - 60, this.height / 2 - 14, 120, 20);
+		this.textField = new GuiTextAuth(this.mc.fontRenderer, this.width / 2 - 60, this.height / 2 - 14, 120, 20);
 		this.textField.setFocused(true);
 
 		this.buttonList.add(new GuiButtonAuth(0, this.width / 2 - 50, this.height / 2 + 70, 100, 20, "Connection"));

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
@@ -91,26 +92,9 @@ public class AuthManager extends ZUtils implements Saver {
 		 * if the password is good, the player can log in, otherwise an error
 		 * message is sent
 		 */
-		if (auth.same(hash)) {
-			send(player, AuthAction.LOGIN_SUCCESS);
-			auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName()));
-			auth.setLogin(true);
-			Logger.info(player.getName() + " just signed in!", LogType.INFO);
-			player.sendMessage(ZPlugin.z().getPrefix() + " §aConnexion effectué avec succès !");
-			if (Config.useMail && !isMail(player.getName())) {
-				player.sendMessage(ZPlugin.z().getPrefix()
-						+ " §aVous n'avez pas vérifié votre mail ! Le serveur se dédouane de toutes responsabilités si une autre personne ce connecter sur votre compte ");
-				player.sendMessage(ZPlugin.z().getPrefix()
-						+ " §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
-			}
-			if (auth.isLogMail())
-				MailManager.i.sendLogEmail(auth, player);
-			if (auth.isLoginMail()) {
-				MailManager.i.sendLoginEmail(auth, player);
-				send(player, AuthAction.SEND_LOGIN_CONFIRM);
-			} else
-				player.teleport(auth.getLocation());
-		} else
+		if (auth.same(hash))
+			login(player, auth);
+		else
 			send(player, AuthAction.LOGIN_ERROR, "§cMot de passe incorrect !");
 	}
 
@@ -139,12 +123,7 @@ public class AuthManager extends ZUtils implements Saver {
 		send(player, AuthAction.REGISTER_SUCCESS);
 		Logger.info(player.getName() + " just signed up!", LogType.INFO);
 		player.sendMessage(ZPlugin.z().getPrefix() + " §aConnexion effectué avec succès !");
-		if (Config.useMail && !isMail(player.getName())) {
-			player.sendMessage(ZPlugin.z().getPrefix()
-					+ " §aVous n'avez pas vérifié votre mail ! Le serveur se dédouane de toutes responsabilités si une autre personne ce connecter sur votre compte ");
-			player.sendMessage(ZPlugin.z().getPrefix()
-					+ " §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
-		}
+		sendMailInformation(player);
 	}
 
 	/**
@@ -247,6 +226,79 @@ public class AuthManager extends ZUtils implements Saver {
 				+ (auth.isLoginMail() ? "d'activer" : "de désactiver") + " §ala connection par mail");
 	}
 
+	/**
+	 * @param sender
+	 * @param player
+	 */
+	public void forceLogin(CommandSender sender, Player player) {
+
+		if (!exist(player.getName())) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur n'ai pas encore inscrit !");
+			return;
+		}
+
+		Auth auth = getUser(player.getName());
+
+		if (auth.isLogin()) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur est déjà connecté !");
+			return;
+		}
+
+		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez de connecter§2" + player.getName() + " §a!");
+		login(player, auth);
+	}
+
+	/**
+	 * @param sender
+	 * @param player
+	 * @param password
+	 */
+	public void forceRegister(CommandSender sender, Player player, String password){
+		
+		if (exist(player.getName())) {
+			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur est déjà inscrit !");
+			return;
+		}
+
+		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez d'inscrire §2" + player.getName() + " §aavec le mot de passe §2" + password+ " §a!");
+		register(player, password);
+		
+	}
+	
+	/**
+	 * Login a player
+	 * 
+	 * @param player
+	 * @param auth
+	 */
+	private void login(Player player, Auth auth) {
+		send(player, AuthAction.LOGIN_SUCCESS);
+		auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName()));
+		auth.setLogin(true);
+		Logger.info(player.getName() + " just signed in!", LogType.INFO);
+		player.sendMessage(ZPlugin.z().getPrefix() + " §aConnexion effectué avec succès !");
+		sendMailInformation(player);
+		if (auth.isLogMail())
+			MailManager.i.sendLogEmail(auth, player);
+		if (auth.isLoginMail()) {
+			MailManager.i.sendLoginEmail(auth, player);
+			send(player, AuthAction.SEND_LOGIN_CONFIRM);
+		} else
+			player.teleport(auth.getLocation());
+	}
+
+	/**
+	 * @param player
+	 */
+	private void sendMailInformation(Player player){
+		if (Config.useMail && !isMail(player.getName())) {
+			player.sendMessage(ZPlugin.z().getPrefix()
+					+ " §aVous n'avez pas vérifié votre mail ! Le serveur se dédouane de toutes responsabilités si une autre personne ce connecter sur votre compte ");
+			player.sendMessage(ZPlugin.z().getPrefix()
+					+ " §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
+		}
+	}
+	
 	public static transient AuthManager i = new AuthManager();
 
 	@Override

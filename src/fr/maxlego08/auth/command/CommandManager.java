@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import fr.maxlego08.auth.Authme;
 import fr.maxlego08.auth.auth.AuthManager;
 import fr.maxlego08.auth.command.VCommand.CommandType;
+import fr.maxlego08.auth.command.commands.CommandAuthForceLogin;
+import fr.maxlego08.auth.command.commands.CommandAuthForceRegister;
 import fr.maxlego08.auth.command.commands.CommandAuthSetLocation;
 import fr.maxlego08.auth.command.commands.CommandMailSet;
 import fr.maxlego08.auth.command.commands.CommandMailVerif;
@@ -28,20 +30,22 @@ public class CommandManager implements CommandExecutor {
 
 		VCommand command = addCommand("authme", new ZCommand().setCommand(cmd -> sendHelp("authme", cmd.getSender()))
 				.setPermission("admin.auth").setSyntaxe("/auth").setDescription("Voir les commandes"));
-		addCommand(new ZCommand().setCommand(cmd -> ZPlugin.z().reload(cmd.getSender())).setDescription("Reload la config")
-				.setSyntaxe("/authme reload").setPermission("admin.auth.reload").addSubCommand("reload")
-				.setParent(command));
+		addCommand(new ZCommand().setCommand(cmd -> ZPlugin.z().reload(cmd.getSender()))
+				.setDescription("Reload la config").setSyntaxe("/authme reload").setPermission("admin.auth.reload")
+				.addSubCommand("reload").setParent(command));
 
 		addCommand(new CommandMailSet().addSubCommand("setmail").setParent(command).setNoConsole(true));
 		addCommand(new CommandMailVerif().addSubCommand("verifmail").setParent(command).setNoConsole(true));
 		addCommand(new CommandAuthSetLocation().addSubCommand("location").setParent(command).setNoConsole(true));
-		addCommand(new ZCommand().setCommand(cmd -> AuthManager.i.updateLogMail(cmd.getPlayer())).setDescription("Activer ou désactiver les notifications par mail")
-				.setSyntaxe("/authme notif").addSubCommand("notif")
-				.setParent(command));
-		addCommand(new ZCommand().setCommand(cmd -> AuthManager.i.updateLoginMail(cmd.getPlayer())).setDescription("Activer ou désactiver la connection par mail")
-				.setSyntaxe("/authme login").addSubCommand("login")
-				.setParent(command));
-		
+		addCommand(new ZCommand().setCommand(cmd -> AuthManager.i.updateLogMail(cmd.getPlayer()))
+				.setDescription("Activer ou désactiver les notifications par mail").setSyntaxe("/authme notif")
+				.addSubCommand("notif").setParent(command).setNoConsole(true));
+		addCommand(new ZCommand().setCommand(cmd -> AuthManager.i.updateLoginMail(cmd.getPlayer()))
+				.setDescription("Activer ou désactiver la connection par mail").setSyntaxe("/authme login")
+				.addSubCommand("login").setParent(command).setNoConsole(true));
+		addCommand(new CommandAuthForceLogin().addSubCommand("forcelogin").setParent(command));
+		addCommand(new CommandAuthForceRegister().addSubCommand("register").setParent(command));
+
 		main.getLog().log("Loading " + getUniqueCommand() + " commands", LogType.SUCCESS);
 
 	}
@@ -114,7 +118,8 @@ public class CommandManager implements CommandExecutor {
 		commands.forEach(command -> {
 			if (command.getParent() != null && command.getParent().getSubCommands().contains(commandString)
 					&& command.getDescription() != null) {
-				sender.sendMessage("§a» §6" + command.getSyntax() + " §7- §e" + command.getDescription());
+				if ((!(sender instanceof Player) && !command.isNoConsole()) || sender instanceof Player)
+					sender.sendMessage("§a» §6" + command.getSyntax() + " §7- §e" + command.getDescription());
 			}
 		});
 	}

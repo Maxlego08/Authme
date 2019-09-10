@@ -31,7 +31,7 @@ public class CommandAuthSetLocation extends VCommand {
 
 	@Override
 	public String getSyntax() {
-		return "/autme setlocation";
+		return "/authme setlocation";
 	}
 
 	@Override
