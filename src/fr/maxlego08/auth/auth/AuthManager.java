@@ -84,6 +84,15 @@ public class AuthManager extends ZUtils implements Saver {
 			send(player, AuthAction.SEND_REGISTER);
 			return;
 		}
+		
+		/**
+		 * we must add 1 because we also take into account the player who is connected
+		 */
+		if (getOnlineUsersWithSameAdress(player.getAddress().getHostName()) + 1 > Config.maxOnlineUserPerAdress) {
+			send(player, AuthAction.LOGIN_ERROR,
+					"Vous avez atteint la limite d'utilisateur simultané sur cette adresse !");
+			return;
+		}
 
 		String hash = hash(password);
 		Auth auth = getUser(player.getName());
@@ -104,13 +113,18 @@ public class AuthManager extends ZUtils implements Saver {
 	 * @param player
 	 * @param password
 	 */
-	public void register(Player player, String password) {
+	public void register(Player player, String password, boolean skipVerifUser) {
 
 		/**
 		 * If the user does not exist, he will login
 		 */
 		if (exist(player.getName())) {
 			send(player, AuthAction.SEND_LOGIN);
+			return;
+		}
+
+		if (!skipVerifUser && getUsersWithSameAdress(player.getAddress().getHostName()) > Config.maxUserPerAdress) {
+			send(player, AuthAction.REGISTER_ERROR, "Vous avez atteint la limite d'utilisateur sur cette adresse !");
 			return;
 		}
 
@@ -211,7 +225,7 @@ public class AuthManager extends ZUtils implements Saver {
 	 */
 	public void updateLogMail(Player player) {
 		Auth auth = getUser(player.getName());
-		if (auth.getMail() == null){
+		if (auth.getMail() == null) {
 			player.sendMessage(ZPlugin.z().getPrefix() + " §cVous n'avez pas enregistrer votre mail !");
 			return;
 		}
@@ -225,7 +239,7 @@ public class AuthManager extends ZUtils implements Saver {
 	 */
 	public void updateLoginMail(Player player) {
 		Auth auth = getUser(player.getName());
-		if (auth.getMail() == null){
+		if (auth.getMail() == null) {
 			player.sendMessage(ZPlugin.z().getPrefix() + " §cVous n'avez pas enregistrer votre mail !");
 			return;
 		}
@@ -270,7 +284,7 @@ public class AuthManager extends ZUtils implements Saver {
 
 		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez d'inscrire §2" + player.getName()
 				+ " §aavec le mot de passe §2" + password + " §a!");
-		register(player, password);
+		register(player, password, true);
 
 	}
 
@@ -361,21 +375,39 @@ public class AuthManager extends ZUtils implements Saver {
 		}
 	}
 
-	public void showInformation(String name, CommandSender sender){
-		
-		if (!users.containsKey(name)){
+	/**
+	 * @param name
+	 * @param sender
+	 */
+	public void showInformation(String name, CommandSender sender) {
+
+		if (!users.containsKey(name)) {
 			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur §6" + name + " §cn'existe pas !");
 			return;
 		}
-		
 		Auth auth = getUser(name);
 		AuthHistorical historical = auth.getLast();
 		sender.sendMessage(ZPlugin.z().getArrow() + " §aPseudo§7: §2" + name);
-		sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière connection§7: §2" + historical.getDate());
-		sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière adresse§7: §2" + historical.getAdress());
-		
+		if (historical != null) {
+			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière connection§7: §2" + historical.getDate());
+			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière adresse§7: §2" + historical.getAdress());
+		}
+
 	}
-	
+
+	/**
+	 * @param adresse
+	 * @return int
+	 */
+	public int getUsersWithSameAdress(String adresse) {
+		return (int) users.values().stream().filter(user -> user.getLastAdress().equals(adresse)).count();
+	}
+
+	public int getOnlineUsersWithSameAdress(String adresse) {
+		return (int) users.values().stream().filter(user -> user.getLastAdress().equals(adresse) && user.isLogin())
+				.count();
+	}
+
 	public static transient AuthManager i = new AuthManager();
 
 	@Override

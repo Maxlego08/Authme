@@ -37,10 +37,10 @@ public class GuiAuth extends GuiScreen {
 
 		this.buttonList.clear();
 
-		this.textField = new GuiTextAuth(this.mc.fontRenderer, this.width / 2 - 60, this.height / 2 - 14, 120, 20);
+		this.textField = new GuiTextAuth(this.mc.fontRenderer, this.width / 2 - 55, this.height / 2 - 14, 120, 20);
 		this.textField.setFocused(true);
 
-		this.buttonList.add(new GuiButtonAuth(0, this.width / 2 - 50, this.height / 2 + 70, 100, 20, "Connection"));
+		this.buttonList.add(new GuiButtonAuth(0, this.width / 2 - 40, this.height / 2 + 70, 100, 20, "Connexion"));
 		this.buttonList
 				.add(new GuiButtonAuth(50, this.width / 2 + 60, this.height / 2 - 110, 20, 20, "X", ColorType.ERROR));
 

@@ -10,21 +10,22 @@ import net.minecraft.network.INetHandler;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 
-public class PacketClientAuth extends Packet{
+public class PacketClientAuth extends Packet {
 
 	private AuthAction action;
 	private String message;
-	
+
 	@Override
 	public void readPacketData(PacketBuffer reader) throws IOException {
 		action = AuthAction.get(reader.readInt());
-		if (action.equals(AuthAction.LOGIN_ERROR) || action.equals(AuthAction.CONFIRM_ERROR))
+		if (action.equals(AuthAction.LOGIN_ERROR) || action.equals(AuthAction.CONFIRM_ERROR)
+				|| action.equals(AuthAction.REGISTER_ERROR))
 			message = reader.readStringFromBuffer(32767);
 	}
 
 	@Override
 	public void writePacketData(PacketBuffer reader) throws IOException {
-		
+
 	}
 
 	@Override
@@ -32,13 +33,8 @@ public class PacketClientAuth extends Packet{
 		switch (action) {
 		case LOGIN_ERROR:
 		case CONFIRM_ERROR:
-			GuiAuth.sendMessage(message);
-			break;
-		case RECEIVE_LOGIN_PASSWORD:
-			break;
-		case RECEIVE_REGISTER_PASSWORD:
-			break;
 		case REGISTER_ERROR:
+			GuiAuth.sendMessage(message);
 			break;
 		case LOGIN_SUCCESS:
 		case REGISTER_SUCCESS:

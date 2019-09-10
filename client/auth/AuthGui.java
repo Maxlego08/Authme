@@ -2,7 +2,7 @@ package fr.oldfight.auth;
 
 public enum AuthGui {
 
-	LOGIN("Connection", AuthAction.RECEIVE_LOGIN_PASSWORD),
+	LOGIN("Connexion", AuthAction.RECEIVE_LOGIN_PASSWORD),
 
 	REGISTER("Inscription", AuthAction.RECEIVE_REGISTER_PASSWORD),
 

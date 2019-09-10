@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import fr.maxlego08.auth.save.Config;
@@ -12,7 +13,6 @@ public class Auth {
 
 	private final String name;
 	private String password;
-	private String twoFactorAuthentication;
 	private String mail;
 	private boolean logMail = false;
 	private boolean loginMail = false;
@@ -42,21 +42,6 @@ public class Auth {
 	 */
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	/**
-	 * @return the twoFactorAuthentication
-	 */
-	public String getTwoFactorAuthentication() {
-		return twoFactorAuthentication;
-	}
-
-	/**
-	 * @param twoFactorAuthentication
-	 *            the twoFactorAuthentication to set
-	 */
-	public void setTwoFactorAuthentication(String twoFactorAuthentication) {
-		this.twoFactorAuthentication = twoFactorAuthentication;
 	}
 
 	/**
@@ -201,8 +186,29 @@ public class Auth {
 		return historical.get(historical.size() - 1).getAdress().equals(adress);
 	}
 
+	/**
+	 * @return AuthHistorical
+	 */
 	public AuthHistorical getLast() {
+		if (historical.size() == 0)
+			return null;
 		return historical.get(historical.size() - 1);
+	}
+
+	/**
+	 * @return last adress
+	 */
+	public String getLastAdress() {
+		if (historical.size() == 0)
+			return "127.0.0.1";
+		return historical.get(historical.size() - 1).getAdress();
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isOnline() {
+		return Bukkit.getPlayer(name) != null;
 	}
 
 }

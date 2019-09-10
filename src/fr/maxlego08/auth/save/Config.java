@@ -17,6 +17,8 @@ public class Config implements Saver {
 	public static String spawnLocation = null;
 
 	public static int maxHistorical = 10;
+	public static int maxUserPerAdress = 1;
+	public static int maxOnlineUserPerAdress = 2;
 	public static boolean useMail = false;
 	public static boolean sendMailWhenAdressIsSame = false;
 
