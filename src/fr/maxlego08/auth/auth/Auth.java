@@ -12,6 +12,7 @@ import fr.maxlego08.auth.save.Config;
 public class Auth {
 
 	private final String name;
+	private final byte[] salt;
 	private String password;
 	private String mail;
 	private boolean logMail = false;
@@ -23,10 +24,12 @@ public class Auth {
 
 	/**
 	 * @param name
+	 * @param salt
 	 */
-	public Auth(String name) {
+	public Auth(String name, byte[] salt) {
 		super();
 		this.name = name;
+		this.salt = salt;
 	}
 
 	/**
@@ -211,4 +214,8 @@ public class Auth {
 		return Bukkit.getPlayer(name) != null;
 	}
 
+	public byte[] getSalt() {
+		return salt;
+	}
+	
 }

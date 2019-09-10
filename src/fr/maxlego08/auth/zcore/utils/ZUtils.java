@@ -16,8 +16,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import fr.maxlego08.auth.save.Config;
-
 @SuppressWarnings("deprecation")
 public abstract class ZUtils {
 
@@ -182,11 +180,11 @@ public abstract class ZUtils {
 		}, 0, 1, TimeUnit.SECONDS);
 	}
 
-	protected String hash(String passwordToHash) {
+	protected String hash(String passwordToHash, byte[] salt) {
 		String generatedPassword = null;
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
-			md.update(Config.salt);
+			md.update(salt);
 			byte[] bytes = md.digest(passwordToHash.getBytes());
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < bytes.length; i++) {

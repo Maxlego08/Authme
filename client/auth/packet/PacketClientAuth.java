@@ -3,7 +3,6 @@ package fr.oldfight.auth.packet;
 import java.io.IOException;
 
 import fr.oldfight.auth.AuthAction;
-import fr.oldfight.auth.AuthGui;
 import fr.oldfight.auth.gui.GuiAuth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.INetHandler;
@@ -42,24 +41,14 @@ public class PacketClientAuth extends Packet {
 			Minecraft.getMinecraft().displayGuiScreen(null);
 			break;
 		case SEND_LOGIN:
-			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.LOGIN));
-			break;
 		case SEND_REGISTER:
-			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.REGISTER));
-			break;
 		case SEND_LOGIN_CONFIRM:
-			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.CONFIRM));
-			break;
 		case SEND_UNREGISTER:
-			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.UNREGISTER));
-			break;
 		case SEND_UNREGISTER_CONFIRM:
-			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.UNREGISTER_CONFIRM));
+			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(action.getGui()));
 			break;
 		default:
 			break;
-
 		}
 	}
-
 }

@@ -1,7 +1,5 @@
 package fr.maxlego08.auth.save;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,7 +10,6 @@ public class Config implements Saver {
 
 	public static int packetId = 110;
 	public static List<String> blacklistUsers = Arrays.asList("xFireman");
-	public static byte[] salt = null;
 
 	public static String spawnLocation = null;
 
@@ -46,19 +43,6 @@ public class Config implements Saver {
 	@Override
 	public void load(Persist persist) {
 		persist.loadOrSaveDefault(i, Config.class, getClass().getSimpleName().toLowerCase());
-		if (salt == null)
-			try {
-				salt = getSalt();
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			}
-	}
-
-	private static byte[] getSalt() throws NoSuchAlgorithmException {
-		SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-		byte[] salt = new byte[16];
-		sr.nextBytes(salt);
-		return salt;
 	}
 
 }

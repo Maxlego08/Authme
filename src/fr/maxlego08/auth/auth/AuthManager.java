@@ -1,5 +1,7 @@
 package fr.maxlego08.auth.auth;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +45,7 @@ public class AuthManager extends ZUtils implements Saver {
 	 * @param name
 	 */
 	public Auth createUser(String name) {
-		Auth auth = new Auth(name);
+		Auth auth = new Auth(name, getSalt());
 		users.put(name, auth);
 		Logger.info("Create new player -> " + name, LogType.INFO);
 		return auth;
@@ -94,8 +96,8 @@ public class AuthManager extends ZUtils implements Saver {
 			return;
 		}
 
-		String hash = hash(password);
 		Auth auth = getUser(player.getName());
+		String hash = hash(password, auth.getSalt());
 
 		/**
 		 * if the password is good, the player can log in, otherwise an error
@@ -128,8 +130,9 @@ public class AuthManager extends ZUtils implements Saver {
 			return;
 		}
 
-		String hash = hash(password);
 		Auth auth = getUser(player.getName());
+		String hash = hash(password, auth.getSalt());
+		
 		auth.setPassword(hash);
 		auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName()));
 		auth.setLogin(true);
@@ -320,8 +323,8 @@ public class AuthManager extends ZUtils implements Saver {
 			return;
 		}
 
-		String hash = hash(password);
 		Auth auth = getUser(player.getName());
+		String hash = hash(password, auth.getSalt());
 
 		if (auth.getPassword().equals(hash)) {
 
@@ -408,6 +411,22 @@ public class AuthManager extends ZUtils implements Saver {
 				.count();
 	}
 
+	/**
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 */
+	private static byte[] getSalt(){
+		SecureRandom sr = null;
+		try {
+			sr = SecureRandom.getInstance("SHA1PRNG");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		byte[] salt = new byte[16];
+		sr.nextBytes(salt);
+		return salt;
+	}
+	
 	public static transient AuthManager i = new AuthManager();
 
 	@Override
