@@ -2,7 +2,6 @@ package fr.oldfight.auth.gui;
 
 import java.awt.Color;
 
-import fr.oldfight.auth.AuthAction;
 import fr.oldfight.auth.AuthGui;
 import fr.oldfight.auth.button.GuiButtonAuth;
 import fr.oldfight.auth.packet.PacketServerAuth;
@@ -59,10 +58,7 @@ public class GuiAuth extends GuiScreen {
 			else if (password.length() < gui.getLenght())
 				sendMessage("§cVotre mot de passe doit avoir minimum §6" + gui.getLenght() + " §ccaractères");
 			else {
-				this.mc.thePlayer.sendQueue.addToSendQueue(new PacketServerAuth(password,
-						(gui.equals(AuthGui.REGISTER) ? AuthAction.RECEIVE_REGISTER_PASSWORD
-								: gui.equals(AuthGui.LOGIN) ? AuthAction.RECEIVE_LOGIN_PASSWORD
-										: AuthAction.RECEIVE_LOGIN_CONFIRM)));
+				this.mc.thePlayer.sendQueue.addToSendQueue(new PacketServerAuth(password, gui.getAction()));
 			}
 		}
 	}
@@ -79,7 +75,7 @@ public class GuiAuth extends GuiScreen {
 		down.setFillColor(new Color(255, 180, 0).getRGB());
 
 		TextRenderer textRenderer = new TextRenderer();
-		textRenderer.renderCenteredText("§6"+gui.getName(), this.width / 2, this.height / 2 - 100, 1);
+		textRenderer.renderCenteredText("§6" + gui.getName(), this.width / 2, this.height / 2 - 100, 1);
 		textRenderer.renderCenteredText("§c" + messageError, this.width / 2 + 5, this.height / 2 + 50, 1);
 
 		this.textField.drawTextBox();

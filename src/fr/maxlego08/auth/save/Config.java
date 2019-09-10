@@ -27,6 +27,7 @@ public class Config implements Saver {
 	public static String EMAIL_CONTENT = "<div style=\"background-color: #282828; text-align: center\"><h1 style=\"color: red\">%code%</h1></div>";
 	public static String EMAIL_CONTENT_LOG = "<div style=\"background-color: #282828; text-align: center\"><h3>Pseudo: %name%</h3><br><h3>Heure: %hour%</h3><br><h3>Adresse ip: %ip%</h3></div>";
 	public static String EMAIL_CONTENT_LOGIN = "<div style=\"background-color: #282828; text-align: center\"><h1 style=\"color: red\">%code%</h1></div>";
+	public static String EMAIL_CONTENT_UNREGISTER = "<div style=\"background-color: #282828; text-align: center\"><h1 style=\"color: #28F8AB\">%code%</h1></div>";
 	public static String EMAIL_SUBJECT = "Oldfight - Verification du mail";
 
 	public static String EMAIL_FROM = "noanswer@oldfight.fr";

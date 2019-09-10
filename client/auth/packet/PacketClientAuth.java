@@ -54,6 +54,12 @@ public class PacketClientAuth extends Packet{
 		case SEND_LOGIN_CONFIRM:
 			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.CONFIRM));
 			break;
+		case SEND_UNREGISTER:
+			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.UNREGISTER));
+			break;
+		case SEND_UNREGISTER_CONFIRM:
+			Minecraft.getMinecraft().displayGuiScreen(new GuiAuth(AuthGui.UNREGISTER_CONFIRM));
+			break;
 		default:
 			break;
 

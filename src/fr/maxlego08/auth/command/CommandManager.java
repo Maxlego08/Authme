@@ -14,6 +14,7 @@ import fr.maxlego08.auth.command.VCommand.CommandType;
 import fr.maxlego08.auth.command.commands.CommandAuthForceLogin;
 import fr.maxlego08.auth.command.commands.CommandAuthForceRegister;
 import fr.maxlego08.auth.command.commands.CommandAuthSetLocation;
+import fr.maxlego08.auth.command.commands.CommandAuthUnregister;
 import fr.maxlego08.auth.command.commands.CommandMailSet;
 import fr.maxlego08.auth.command.commands.CommandMailVerif;
 import fr.maxlego08.auth.zcore.ZPlugin;
@@ -45,6 +46,7 @@ public class CommandManager implements CommandExecutor {
 				.addSubCommand("login").setParent(command).setNoConsole(true));
 		addCommand(new CommandAuthForceLogin().addSubCommand("forcelogin").setParent(command));
 		addCommand(new CommandAuthForceRegister().addSubCommand("register").setParent(command));
+		addCommand(new CommandAuthUnregister().addSubCommand("unregister").setParent(command).setNoConsole(true));
 		addCommand(new ZCommand().setCommand(cmd -> {
 			cmd.sendMessage(main.getPrefix() + " §aUtilisateur§7: §2" + AuthManager.getUsers().size());
 			cmd.sendMessage(main.getPrefix() + " §aUtilisateur avec le mail confirmé§7: §2"

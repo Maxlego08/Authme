@@ -253,18 +253,19 @@ public class AuthManager extends ZUtils implements Saver {
 	 * @param player
 	 * @param password
 	 */
-	public void forceRegister(CommandSender sender, Player player, String password){
-		
+	public void forceRegister(CommandSender sender, Player player, String password) {
+
 		if (exist(player.getName())) {
 			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur est déjà inscrit !");
 			return;
 		}
 
-		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez d'inscrire §2" + player.getName() + " §aavec le mot de passe §2" + password+ " §a!");
+		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez d'inscrire §2" + player.getName()
+				+ " §aavec le mot de passe §2" + password + " §a!");
 		register(player, password);
-		
+
 	}
-	
+
 	/**
 	 * Login a player
 	 * 
@@ -287,14 +288,63 @@ public class AuthManager extends ZUtils implements Saver {
 			player.teleport(auth.getLocation());
 	}
 
+	/**
+	 * @param player
+	 * @param password
+	 */
+	public void unregister(Player player, String password) {
+		if (!exist(player.getName())) {
+			send(player, AuthAction.SEND_REGISTER);
+			return;
+		}
+
+		String hash = hash(password);
+		Auth auth = getUser(player.getName());
+
+		if (auth.getPassword().equals(hash)) {
+
+			if (auth.getMail() != null) {
+				send(player, AuthAction.SEND_UNREGISTER_CONFIRM);
+				MailManager.i.sendMailUnregisterConfirm(auth, player);
+			} else {
+				users.remove(player.getName());
+				player.kickPlayer("§cVous venez de vous désinscrire !");
+				Logger.info(player.getName() + " just delete account !", LogType.INFO);
+			}
+		} else
+			player.sendMessage(ZPlugin.z().getPrefix() + " §cMot de passe incorrect !");
+	}
+
+	public void unregisterConfirm(Player player, String code) {
+
+		if (!exist(player.getName())) {
+			send(player, AuthAction.SEND_REGISTER);
+			return;
+		}
+
+		Auth auth = getUser(player.getName());
+
+		if (MailManager.i.verifCodeUnregister(player.getName(), code)) {
+			auth.setMailLogin(false);
+			Logger.info(player.getName() + " just delete account !", LogType.INFO);
+			users.remove(player.getName());
+			player.kickPlayer("§cVous venez de vous désinscrire !");
+		} else {
+			send(player, AuthAction.CONFIRM_ERROR, "Code incorrect !");
+		}
+	}
+
+	/**
+	 * @return users
+	 */
 	public static Map<String, Auth> getUsers() {
 		return users;
 	}
-	
+
 	/**
 	 * @param player
 	 */
-	private void sendMailInformation(Player player){
+	private void sendMailInformation(Player player) {
 		if (Config.useMail && !isMail(player.getName())) {
 			player.sendMessage(ZPlugin.z().getPrefix()
 					+ " §aVous n'avez pas vérifié votre mail ! Le serveur se dédouane de toutes responsabilités si une autre personne ce connecter sur votre compte ");
@@ -302,7 +352,7 @@ public class AuthManager extends ZUtils implements Saver {
 					+ " §aFaite §2/authme setmail <votre mail> §apour faire vérifier votre mail");
 		}
 	}
-	
+
 	public static transient AuthManager i = new AuthManager();
 
 	@Override

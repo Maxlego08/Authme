@@ -35,6 +35,7 @@ public class MailManager implements Saver {
 
 	private static Map<String, Mail> verifEmail = new HashMap<String, Mail>();
 	private static transient Map<String, MailLogin> verifEmailLogin = new HashMap<String, MailLogin>();
+	private static transient Map<String, String> verifEmailUnregister = new HashMap<String, String>();
 
 	/**
 	 * @param player
@@ -109,7 +110,43 @@ public class MailManager implements Saver {
 			}
 		}, 100);
 	}
+	
+	/**
+	 * @param auth
+	 * @param player
+	 */
+	public void sendMailUnregisterConfirm(Auth auth, Player player) {
+		if (auth.getMail() == null)
+			return;
+		Timer timer = new Timer();
+		String key = generateRandomKey();
+		verifEmailUnregister.put(player.getName(), key);
+		player.sendMessage(ZPlugin.z().getPrefix() + " §aEnvoie du mail...");
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				String htmlContent = Config.EMAIL_CONTENT_UNREGISTER.replace("%code%", key);
+				if (sendMail("Oldfight - Suppression de votre compte", htmlContent, auth.getMail()))
+					player.sendMessage(ZPlugin.z().getPrefix() + " §aMail envoyé avec succès à §2"
+							+ getBlur(auth.getMail()) + "§a !");
+				else
+					player.sendMessage(
+							ZPlugin.z().getPrefix() + " §cUne erreur est survenue lors de l'envoie du mail à §6"
+									+ getBlur(auth.getMail()) + "§c !");
+			}
+		}, 100);
+	}
 
+	public boolean verifCodeUnregister(String name, String code) {
+		if (!verifEmailUnregister.containsKey(name))
+			return true;
+		boolean isCorrect = verifEmailUnregister.get(name).equals(code);
+		if (isCorrect) 
+			verifEmailUnregister.remove(name);
+		return isCorrect;
+
+	}
+	
 	/**
 	 * @param mail
 	 * @return current string in blur

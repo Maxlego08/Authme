@@ -40,6 +40,12 @@ public class PacketAuthServer extends Packet {
 		case RECEIVE_LOGIN_CONFIRM:
 			AuthManager.i.confirmLogin(player, password);
 			break;
+		case RECEIVE_UNREGISTER:
+			AuthManager.i.unregister(player, password);
+			break;
+		case RECEIVE_UNREGISTER_CONFIRM:
+			AuthManager.i.unregisterConfirm(player, password);
+			break;
 		default:
 			break;
 		}
