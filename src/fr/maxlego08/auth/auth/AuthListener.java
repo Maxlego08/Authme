@@ -1,8 +1,5 @@
 package fr.maxlego08.auth.auth;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -23,36 +20,23 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import fr.maxlego08.auth.listener.ListenerAdapter;
 import fr.maxlego08.auth.save.Config;
 import fr.maxlego08.auth.zcore.ZPlugin;
+import fr.maxlego08.auth.zcore.utils.ConnectionResult;
 
 public class AuthListener extends ListenerAdapter {
 
 	@Override
 	protected void onPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
-		if (!AuthManager.i.canConnect(event.getName())) {
-			event.setKickMessage("§cUne erreur est survenu lors du chargement de votre pseudo :/");
+		ConnectionResult result = AuthManager.i.canConnect(event.getName(), event.getUniqueAddress());
+		if (!result.equals(ConnectionResult.CONNECT)){
+			event.setKickMessage(result.getReason());
 			event.setLoginResult(Result.KICK_OTHER);
-			return;
 		}
-		if (Config.isBlacklist(event.getName())) {
-			event.setKickMessage(getRandomColor("Hi hi hi !\nVous êtes blacklist du serveur :3\nEn plus le message il est tout coloré c'est zoli"));
-			event.setLoginResult(Result.KICK_OTHER);
-			return;
-		}
-	}
-
-	private List<String> colors = Arrays.asList("a", "b", "d", "e", "f", "3", "2", "4", "5", "6", "7", "8", "3", "9", "c");
-
-	private String getRandomColor(String string) {
-		Random random = new Random();
-		String coloredString = "";
-		for (String letter : string.split("")) 
-			coloredString += "§" + colors.get(random.nextInt(colors.size() - 1)) + letter;
-		return coloredString;
 	}
 
 	@Override
 	protected void onConnect(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
+		
 		AuthManager.i.join(player);
 		Auth auth = AuthManager.i.getUser(player.getName());
 		auth.setLogin(false);

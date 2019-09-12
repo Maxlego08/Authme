@@ -32,7 +32,7 @@ public class PacketAuthServer extends Packet {
 	public void handle(PacketListener reader) {
 		switch (action) {
 		case RECEIVE_LOGIN_PASSWORD:
-			AuthManager.i.login(player, password);
+			AuthManager.i.login(player, password, false);
 			break;
 		case RECEIVE_REGISTER_PASSWORD:
 			AuthManager.i.register(player, password, false);

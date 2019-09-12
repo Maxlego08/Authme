@@ -183,10 +183,10 @@ public class Auth {
 					.collect(Collectors.toList());
 	}
 
-	public boolean sameAdress(String adress) {
+	public boolean sameAdress(String address) {
 		if (historical.size() == 0)
 			return false;
-		return historical.get(historical.size() - 1).getAdress().equals(adress);
+		return historical.get(historical.size() - 1).getAddress().equals(address);
 	}
 
 	/**
@@ -201,10 +201,16 @@ public class Auth {
 	/**
 	 * @return last adress
 	 */
-	public String getLastAdress() {
+	public String getLastAddress() {
 		if (historical.size() == 0)
 			return "127.0.0.1";
-		return historical.get(historical.size() - 1).getAdress();
+		return historical.get(historical.size() - 1).getAddress();
+	}
+	
+	public String getLastUniqueAddress() {
+		if (historical.size() == 0)
+			return "00-00-00-00-00-00";
+		return historical.get(historical.size() - 1).getAddressMac();
 	}
 
 	/**

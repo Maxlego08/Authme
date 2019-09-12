@@ -3,16 +3,19 @@ package fr.maxlego08.auth.auth;
 public class AuthHistorical {
 
 	private final String date;
-	private final String adress;
+	private final String address;
+	private final String addressMac;
 
 	/**
 	 * @param date
-	 * @param adress
+	 * @param address
+	 * @param addressMac
 	 */
-	public AuthHistorical(String date, String adress) {
+	public AuthHistorical(String date, String address, String addressMac) {
 		super();
 		this.date = date;
-		this.adress = adress;
+		this.address = address;
+		this.addressMac = addressMac;
 	}
 
 	/**
@@ -23,10 +26,17 @@ public class AuthHistorical {
 	}
 
 	/**
-	 * @return the adress
+	 * @return the address
 	 */
-	public String getAdress() {
-		return adress;
+	public String getAddress() {
+		return address;
+	}
+
+	/**
+	 * @return the addressMac
+	 */
+	public String getAddressMac() {
+		return addressMac;
 	}
 
 }

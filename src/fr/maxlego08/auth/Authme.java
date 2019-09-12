@@ -24,7 +24,7 @@ public class Authme extends ZPlugin {
 
 	private CommandManager commandManager;
 	private InventoryManager inventoryManager;
-
+	
 	@Override
 	public void onEnable() {
 

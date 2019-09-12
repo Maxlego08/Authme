@@ -21,6 +21,7 @@ import fr.maxlego08.auth.save.Config;
 import fr.maxlego08.auth.zcore.ZPlugin;
 import fr.maxlego08.auth.zcore.logger.Logger;
 import fr.maxlego08.auth.zcore.logger.Logger.LogType;
+import fr.maxlego08.auth.zcore.utils.ConnectionResult;
 import fr.maxlego08.auth.zcore.utils.ZUtils;
 import fr.maxlego08.auth.zcore.utils.storage.Persist;
 import fr.maxlego08.auth.zcore.utils.storage.Saver;
@@ -80,7 +81,7 @@ public class AuthManager extends ZUtils implements Saver {
 	 * @param player
 	 * @param password
 	 */
-	public void login(Player player, String password) {
+	public void login(Player player, String password, boolean bypass) {
 
 		/*
 		 * If the user does not exist, he will register!
@@ -94,9 +95,14 @@ public class AuthManager extends ZUtils implements Saver {
 		 * we must add 1 because we also take into account the player who is
 		 * connected
 		 */
-		if (getOnlineUsersWithSameAdress(player.getAddress().getHostName()) + 1 > Config.maxOnlineUserPerAdress) {
+		if (getOnlineUsersWithSameAddress(player.getAddress().getHostName()) + 1 > Config.maxOnlineUserPerAddress) {
 			send(player, AuthAction.LOGIN_ERROR,
 					"Vous avez atteint la limite d'utilisateur simultané sur cette adresse !");
+			return;
+		}
+
+		if ((getOnlineUsersWithSameAddressMac(player.getUniqueAddress()) + 1) > Config.maxUserPerAddressMac) {
+			send(player, AuthAction.REGISTER_ERROR, "Vous pouvez connecter un seul compte en simultané !");
 			return;
 		}
 
@@ -129,8 +135,15 @@ public class AuthManager extends ZUtils implements Saver {
 			return;
 		}
 
-		if (!skipVerifUser && getUsersWithSameAdress(player.getAddress().getHostName()) > Config.maxUserPerAdress) {
+		if (!skipVerifUser && getUsersWithSameAddressMac(player.getUniqueAddress()) > Config.maxUserPerAddressMac) {
 			send(player, AuthAction.REGISTER_ERROR, "Vous avez atteint la limite d'utilisateur sur cette adresse !");
+			return;
+		}
+
+		if (!skipVerifUser && getOnlineUsersWithSameAddress(player.getAddress().getHostName())
+				+ 1 > Config.maxOnlineUserPerAddress) {
+			send(player, AuthAction.LOGIN_ERROR,
+					"Vous avez atteint la limite d'utilisateur simultané sur cette adresse !");
 			return;
 		}
 
@@ -138,7 +151,8 @@ public class AuthManager extends ZUtils implements Saver {
 		String hash = hash(password, auth.getSalt());
 
 		auth.setPassword(hash);
-		auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName()));
+		auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName(),
+				player.getUniqueAddress()));
 		auth.setLogin(true);
 		player.teleport(auth.getLocation());
 		send(player, AuthAction.REGISTER_SUCCESS);
@@ -309,7 +323,8 @@ public class AuthManager extends ZUtils implements Saver {
 	 */
 	private void login(Player player, Auth auth) {
 		send(player, AuthAction.LOGIN_SUCCESS);
-		auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName()));
+		auth.add(new AuthHistorical(new Date().toString(), player.getAddress().getHostName(),
+				player.getUniqueAddress()));
 		auth.setLogin(true);
 		Logger.info(player.getName() + " just signed in!", LogType.INFO);
 		player.sendMessage(ZPlugin.z().getPrefix() + " §aConnexion effectué avec succès !");
@@ -411,12 +426,15 @@ public class AuthManager extends ZUtils implements Saver {
 		sender.sendMessage(ZPlugin.z().getArrow() + " §aVerification par mail§7: §2" + auth.isLoginMail());
 		if (historical != null) {
 			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière connection§7: §2" + historical.getDate());
-			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière adresse§7: §2" + historical.getAdress());
+			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière adresse§7: §2" + historical.getAddress());
+			sender.sendMessage(ZPlugin.z().getArrow() + " §aDernière adresse mac§7: §2" + historical.getAddressMac());
 		}
 
 	}
 
-	public boolean canConnect(String name) {
+	public ConnectionResult canConnect(String name, String address) {
+		ConnectionResult result = ConnectionResult.CONNECT;
+
 		List<String> currentUsers = users.keySet().stream().filter(key -> key.length() == name.length())
 				.collect(Collectors.toList());
 		AtomicBoolean canConnect = new AtomicBoolean(true);
@@ -427,20 +445,35 @@ public class AuthManager extends ZUtils implements Saver {
 					canConnect.set(true);
 			}
 		});
-		return canConnect.get();
+		if (!canConnect.get())
+			return ConnectionResult.INVALID_NAME;
+
+		if ((getOnlineUsersWithSameAddressMac(address) + 1) > Config.maxUserPerAddressMac)
+			return ConnectionResult.NUMBER_OF_USERS_REACHED;
+
+		return result;
 	}
 
 	/**
 	 * @param adresse
 	 * @return int
 	 */
-	public int getUsersWithSameAdress(String adresse) {
-		return (int) users.values().stream().filter(user -> user.getLastAdress().equals(adresse)).count();
+	public int getUsersWithSameAddress(String address) {
+		return (int) users.values().stream().filter(user -> user.getLastAddress().equals(address)).count();
 	}
 
-	public int getOnlineUsersWithSameAdress(String adresse) {
-		return (int) users.values().stream().filter(user -> user.getLastAdress().equals(adresse) && user.isLogin())
+	public int getOnlineUsersWithSameAddress(String address) {
+		return (int) users.values().stream().filter(user -> user.getLastAddress().equals(address) && user.isLogin())
 				.count();
+	}
+
+	public int getUsersWithSameAddressMac(String addressMac) {
+		return (int) users.values().stream().filter(user -> user.getLastUniqueAddress().equals(addressMac)).count();
+	}
+
+	public int getOnlineUsersWithSameAddressMac(String addressMac) {
+		return (int) users.values().stream()
+				.filter(user -> user.getLastUniqueAddress().equals(addressMac) && user.isLogin()).count();
 	}
 
 	/**
@@ -506,7 +539,6 @@ public class AuthManager extends ZUtils implements Saver {
 			sender.sendMessage(ZPlugin.z().getPrefix() + " §cLe joueur n'est pas blacklist !");
 			return;
 		}
-
 		Config.blacklistUsers.remove(user.toLowerCase());
 		sender.sendMessage(ZPlugin.z().getPrefix() + " §aVous venez de retirer la blacklist de §2" + user + " §a!");
 
