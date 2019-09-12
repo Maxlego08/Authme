@@ -17,7 +17,7 @@ this.func_150751_a(110, PacketServerAuth.class);
 * Password hashed in SHA512 with a different salt per user
 * Custom inventory to register, login, confirm your email
 * Verification and notification by mail
-* User limitation system by ip address
+* User limitation system by ip and mac address
 * Only works for servers modded in 1.7.10
 
 # Commandes
@@ -35,3 +35,6 @@ this.func_150751_a(110, PacketServerAuth.class);
 * /authme stats - See the number of users
 * /authme version - See plugin version
 * /authme show \<player\> - View player information
+* /authme bls - View blacklist players
+* /authme bladd \<player\> - add player in blacklist
+* /authme blremove \<player\> - remove player from blacklist
